@@ -11,6 +11,7 @@
 	<groupId>com.geekstotechie</groupId>
 	<artifactId>jenkins-ci-cd</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
 	<name>jenkins-ci-cd</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
@@ -49,6 +50,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
+		<finalName>jenkinsCiCd</finalName>
 	</build>
 
 </project>
