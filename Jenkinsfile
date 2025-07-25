@@ -5,6 +5,14 @@ pipeline {
         maven "maven" // This should match the Maven name in Jenkins > Global Tool Configuration
     }
 
+    environment {
+        APP_NAME = 'spring-docker-cicd'
+        RELEASE_NO = '1.0.0'
+        DOCKER_USER = 'prateeksingh825'
+        IMAGE_NAME = '${DOCKER_USER}' + '/' + '${APP_NAME}'
+        IMAGE_TAG = '${RELEASE_NO}-${BUILD_NUMBER}'
+    }
+
     stages {
         stage('SCM checkout') {
             steps {
@@ -23,15 +31,27 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to Container') {
+        stage('Build Docker Image') {
             steps {
-                deploy adapters: [
-                    tomcat9(alternativeDeploymentContext: '',
-                    credentialsId: 'tomcat-pwd',
-                    path: '',
-                    url: 'http://localhost:9090/')],
-                    contextPath: 'jenkinsCiCd',
-                    war: '**/*.war'
+                script {
+                    bat 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
+                }
+            }
+        }
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )]) {
+                        bat '''
+                            docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%
+                            docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                        '''
+                    }
+                }
             }
         }
     }
@@ -39,7 +59,7 @@ pipeline {
         always {
             emailext(
                 attachLog: true,
-                subject: "📦 Build Result: ${currentBuild.currentResult} - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                subject: "Build Result: ${currentBuild.currentResult} - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 mimeType: 'text/html',
                 body: """
                     <html>
