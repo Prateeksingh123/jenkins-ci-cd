@@ -9,8 +9,8 @@ pipeline {
         APP_NAME = 'spring-docker-cicd'
         RELEASE_NO = '1.0.0'
         DOCKER_USER = 'prateeksingh825'
-        IMAGE_NAME = '${DOCKER_USER}' + '/' + '${APP_NAME}'
-        IMAGE_TAG = '${RELEASE_NO}-${BUILD_NUMBER}'
+        IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
+        IMAGE_TAG = "${RELEASE_NO}-${BUILD_NUMBER}"
     }
 
     stages {
@@ -34,7 +34,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    bat 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
+                    bat 'docker build -t %IMAGE_NAME%:%IMAGE_TAG% .'
                 }
             }
         }
@@ -48,7 +48,7 @@ pipeline {
                     )]) {
                         bat '''
                             docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%
-                            docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                            docker push %IMAGE_NAME%:%IMAGE_TAG%
                         '''
                     }
                 }
